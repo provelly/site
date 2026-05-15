@@ -1,12 +1,12 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>CertAuth System</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Sora:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="/css/style.css"/>
 </head>
 <body>
 <div id="app">
@@ -19,15 +19,12 @@
     </div>
   </div>
 
-  <!-- ════════════════════════════════════
-       인증 페이지 (로그인 / 회원가입)
-       ════════════════════════════════════ -->
+  <!-- ══════════════════ 인증 페이지 ══════════════════ -->
   <div id="auth-page" class="hidden">
     <div class="auth-bg"><div class="grid-overlay"></div><div class="scan-line"></div></div>
     <div class="auth-page">
       <div class="auth-box">
 
-        <!-- 로고 -->
         <div class="auth-logo">
           <div class="logo-icon">
             <svg width="52" height="52" viewBox="0 0 52 52" fill="none">
@@ -43,24 +40,23 @@
 
         <!-- 탭 -->
         <div class="auth-tabs">
-          <button class="auth-tab active" data-tab="login">로그인</button>
+          <button class="auth-tab active" data-tab="login">비밀번호</button>
+          <button class="auth-tab" data-tab="face-login">얼굴인식</button>
+          <button class="auth-tab" data-tab="cert-login">인증서</button>
           <button class="auth-tab" data-tab="register">회원가입</button>
-          <button class="auth-tab" data-tab="cert-login">인증서 로그인</button>
         </div>
 
-        <!-- ══════════════════════════════
-             로그인 패널
-             ══════════════════════════════ -->
+        <!-- ── 비밀번호 로그인 ── -->
         <div id="panel-login" class="auth-panel active">
           <div class="form-group">
             <label class="form-label">아이디 또는 이메일</label>
-            <input type="text" id="login-id" class="form-input" placeholder="아이디 또는 이메일" autocomplete="username" />
+            <input type="text" id="login-id" class="form-input" placeholder="아이디 또는 이메일" autocomplete="username"/>
             <div class="field-error" id="err-login-id"></div>
           </div>
           <div class="form-group">
             <label class="form-label">비밀번호</label>
             <div class="input-wrap">
-              <input type="password" id="login-pw" class="form-input" placeholder="••••••••" autocomplete="current-password" />
+              <input type="password" id="login-pw" class="form-input" placeholder="••••••••" autocomplete="current-password"/>
               <button class="pw-toggle" data-target="login-pw" tabindex="-1">👁</button>
             </div>
             <div class="field-error" id="err-login-pw"></div>
@@ -70,56 +66,97 @@
           <div class="auth-link">계정이 없으신가요? <a onclick="switchTab('register')">회원가입</a></div>
         </div>
 
-        <!-- ══════════════════════════════
-             회원가입 패널 (3단계)
-             ══════════════════════════════ -->
-        <div id="panel-register" class="auth-panel">
-
-          <!-- 스텝 인디케이터 -->
-          <div class="step-indicator">
-            <div class="step active" id="si-1">
-              <div class="step-circle">1</div>
-              <div class="step-label">개인정보</div>
+        <!-- ── 얼굴인식 로그인 ── -->
+        <div id="panel-face-login" class="auth-panel">
+          <p class="face-desc">등록된 얼굴로 비밀번호 없이 로그인합니다.<br>카메라를 정면으로 바라봐 주세요.</p>
+          <div class="webcam-wrap" id="face-login-wrap">
+            <video id="face-login-video" class="webcam-video" autoplay muted playsinline></video>
+            <canvas id="face-login-canvas" class="webcam-canvas"></canvas>
+            <div class="face-guide-ring" id="face-guide-ring">
+              <div class="face-guide-inner"></div>
             </div>
-            <div class="step-line"></div>
-            <div class="step" id="si-2">
-              <div class="step-circle">2</div>
-              <div class="step-label">계정 설정</div>
-            </div>
-            <div class="step-line"></div>
-            <div class="step" id="si-3">
-              <div class="step-circle">3</div>
-              <div class="step-label">인증서 발급</div>
-            </div>
-            <div class="step-line"></div>
-            <div class="step" id="si-4">
-              <div class="step-circle">✓</div>
-              <div class="step-label">완료</div>
+            <div class="face-status-overlay" id="face-login-status">
+              <span class="face-status-dot"></span>
+              <span id="face-login-status-text">카메라 시작 중...</span>
             </div>
           </div>
+          <button class="btn btn-primary" id="btn-start-face-login" style="margin-top:14px">📷 카메라 시작</button>
+          <button class="btn btn-danger hidden" id="btn-stop-face-login" style="margin-top:14px">⏹ 중지</button>
+          <div id="face-login-alert" class="alert alert-error hidden"></div>
+          <div class="auth-link">계정이 없으신가요? <a onclick="switchTab('register')">회원가입</a></div>
+        </div>
 
-          <!-- ── STEP 1: 개인정보 ── -->
-          <div id="reg-step1" class="reg-step">
-            <div class="step-title">
-              <span class="step-num">01</span>
-              <span class="step-name">개인정보 입력</span>
+        <!-- ── 인증서 로그인 ── -->
+        <div id="panel-cert-login" class="auth-panel">
+          <p style="color:var(--text-muted);font-size:13px;margin-bottom:16px;line-height:1.8">
+            회원가입 시 발급된 <strong style="color:var(--accent)">PEM 인증서 파일</strong>로<br>비밀번호 없이 로그인합니다.
+          </p>
+          <div class="cert-drop" id="cert-drop">
+            <div class="cert-drop-icon">
+              <svg width="38" height="38" viewBox="0 0 40 40" fill="none">
+                <rect x="7" y="3" width="22" height="30" rx="3" stroke="currentColor" stroke-width="1.5" fill="none"/>
+                <line x1="13" y1="12" x2="23" y2="12" stroke="currentColor" stroke-width="1.5"/>
+                <line x1="13" y1="18" x2="23" y2="18" stroke="currentColor" stroke-width="1.5"/>
+                <line x1="13" y1="24" x2="19" y2="24" stroke="currentColor" stroke-width="1.5"/>
+                <circle cx="31" cy="31" r="8" fill="var(--bg-card)" stroke="currentColor" stroke-width="1.5"/>
+                <line x1="31" y1="27.5" x2="31" y2="34.5" stroke="currentColor" stroke-width="1.5"/>
+                <line x1="27.5" y1="31" x2="34.5" y2="31" stroke="currentColor" stroke-width="1.5"/>
+              </svg>
             </div>
+            <div class="cert-drop-text">PEM 파일 드래그 또는 클릭</div>
+            <div class="cert-drop-sub">.pem · .crt · .cer 지원</div>
+            <input type="file" id="cert-file" accept=".pem,.crt,.cer" class="hidden"/>
+          </div>
+          <div id="cert-loaded-bar" class="cert-loaded hidden">
+            <div class="cert-loaded-dot"></div>
+            <div class="cert-loaded-name" id="cert-loaded-name">파일 로드됨</div>
+            <button class="btn-icon" id="btn-cert-clear">✕</button>
+          </div>
+          <div class="form-group">
+            <label class="form-label">또는 PEM 텍스트 직접 입력</label>
+            <textarea id="cert-text" class="form-input" style="font-family:'JetBrains Mono',monospace;font-size:11px" rows="5" placeholder="-----BEGIN CERTIFICATE-----&#10;...&#10;-----END CERTIFICATE-----"></textarea>
+          </div>
+          <button class="btn btn-primary" id="btn-cert-login">인증서로 로그인</button>
+          <div id="cert-login-alert" class="alert alert-error hidden"></div>
+          <div class="auth-link">계정이 없으신가요? <a onclick="switchTab('register')">회원가입</a></div>
+        </div>
+
+        <!-- ══════════════════════════════
+             회원가입 패널 (4단계)
+             ══════════════════════════════ -->
+        <div id="panel-register" class="auth-panel">
+          <!-- 스텝 인디케이터 -->
+          <div class="step-indicator">
+            <div class="step active" id="si-1"><div class="step-circle">1</div><div class="step-label">개인정보</div></div>
+            <div class="step-line"></div>
+            <div class="step" id="si-2"><div class="step-circle">2</div><div class="step-label">계정설정</div></div>
+            <div class="step-line"></div>
+            <div class="step" id="si-3"><div class="step-circle">3</div><div class="step-label">얼굴등록</div></div>
+            <div class="step-line"></div>
+            <div class="step" id="si-4"><div class="step-circle">4</div><div class="step-label">인증서</div></div>
+            <div class="step-line"></div>
+            <div class="step" id="si-5"><div class="step-circle">✓</div><div class="step-label">완료</div></div>
+          </div>
+
+          <!-- STEP 1: 개인정보 -->
+          <div id="reg-step1" class="reg-step">
+            <div class="step-title"><span class="step-num">01</span><span class="step-name">개인정보 입력</span></div>
             <div class="form-row">
               <div class="form-group">
                 <label class="form-label">이름 <span class="required">*</span></label>
-                <input type="text" id="r1-name" class="form-input" placeholder="홍길동" />
+                <input type="text" id="r1-name" class="form-input" placeholder="홍길동"/>
                 <div class="field-error" id="err-r1-name"></div>
               </div>
               <div class="form-group">
                 <label class="form-label">나이 <span class="required">*</span></label>
-                <input type="number" id="r1-age" class="form-input" placeholder="25" min="1" max="150" />
+                <input type="number" id="r1-age" class="form-input" placeholder="25" min="1" max="150"/>
                 <div class="field-error" id="err-r1-age"></div>
               </div>
             </div>
             <div class="form-group">
               <label class="form-label">이메일 <span class="required">*</span></label>
               <div class="input-with-btn">
-                <input type="email" id="r1-email" class="form-input" placeholder="user@example.com" />
+                <input type="email" id="r1-email" class="form-input" placeholder="user@example.com"/>
                 <button class="btn-check" id="btn-check-email">중복확인</button>
               </div>
               <div class="field-error" id="err-r1-email"></div>
@@ -128,46 +165,38 @@
             <div class="form-row">
               <div class="form-group">
                 <label class="form-label">소속 부서</label>
-                <input type="text" id="r1-dept" class="form-input" placeholder="개발팀" />
+                <input type="text" id="r1-dept" class="form-input" placeholder="개발팀"/>
               </div>
               <div class="form-group">
                 <label class="form-label">조직명</label>
-                <input type="text" id="r1-org" class="form-input" placeholder="회사명" />
+                <input type="text" id="r1-org" class="form-input" placeholder="회사명"/>
               </div>
             </div>
             <div id="reg-alert-1" class="alert alert-error hidden"></div>
-            <div class="step-nav">
-              <div></div>
-              <button class="btn btn-primary step-btn" id="btn-step1-next">다음 단계 →</button>
-            </div>
+            <div class="step-nav"><div></div><button class="btn btn-primary step-btn" id="btn-step1-next">다음 →</button></div>
           </div>
 
-          <!-- ── STEP 2: 계정 설정 ── -->
+          <!-- STEP 2: 계정설정 -->
           <div id="reg-step2" class="reg-step hidden">
-            <div class="step-title">
-              <span class="step-num">02</span>
-              <span class="step-name">아이디 · 비밀번호 설정</span>
-            </div>
+            <div class="step-title"><span class="step-num">02</span><span class="step-name">아이디 · 비밀번호 설정</span></div>
             <div class="form-group">
               <label class="form-label">아이디 <span class="required">*</span></label>
               <div class="input-with-btn">
-                <input type="text" id="r2-username" class="form-input" placeholder="영문, 숫자 4~20자" autocomplete="username" />
+                <input type="text" id="r2-username" class="form-input" placeholder="영문, 숫자 4~20자" autocomplete="username"/>
                 <button class="btn-check" id="btn-check-username">중복확인</button>
               </div>
               <div class="field-error" id="err-r2-username"></div>
               <div class="field-ok hidden" id="ok-r2-username">✓ 사용 가능한 아이디입니다.</div>
             </div>
             <div class="form-group">
-              <label class="form-label">비밀번호 <span class="required">*</span> <span class="hint">영문+숫자+특수문자 포함 8자 이상 권장</span></label>
+              <label class="form-label">비밀번호 <span class="required">*</span> <span class="hint">8자 이상 권장</span></label>
               <div class="input-wrap">
-                <input type="password" id="r2-pw" class="form-input" placeholder="••••••••" autocomplete="new-password" />
+                <input type="password" id="r2-pw" class="form-input" placeholder="••••••••" autocomplete="new-password"/>
                 <button class="pw-toggle" data-target="r2-pw" tabindex="-1">👁</button>
               </div>
               <div class="pw-strength">
-                <div class="pw-bar" id="pw-b1"></div>
-                <div class="pw-bar" id="pw-b2"></div>
-                <div class="pw-bar" id="pw-b3"></div>
-                <div class="pw-bar" id="pw-b4"></div>
+                <div class="pw-bar" id="pw-b1"></div><div class="pw-bar" id="pw-b2"></div>
+                <div class="pw-bar" id="pw-b3"></div><div class="pw-bar" id="pw-b4"></div>
                 <span class="pw-label" id="pw-lbl"></span>
               </div>
               <div class="field-error" id="err-r2-pw"></div>
@@ -175,26 +204,62 @@
             <div class="form-group">
               <label class="form-label">비밀번호 확인 <span class="required">*</span></label>
               <div class="input-wrap">
-                <input type="password" id="r2-pw2" class="form-input" placeholder="••••••••" autocomplete="new-password" />
+                <input type="password" id="r2-pw2" class="form-input" placeholder="••••••••" autocomplete="new-password"/>
                 <button class="pw-toggle" data-target="r2-pw2" tabindex="-1">👁</button>
               </div>
               <div class="field-error" id="err-r2-pw2"></div>
             </div>
-            <!-- 입력 요약 -->
             <div class="info-box" id="step2-summary"></div>
             <div id="reg-alert-2" class="alert alert-error hidden"></div>
             <div class="step-nav">
               <button class="btn btn-secondary step-btn" id="btn-step2-prev">← 이전</button>
-              <button class="btn btn-primary step-btn" id="btn-step2-next">인증서 발급 →</button>
+              <button class="btn btn-primary step-btn" id="btn-step2-next">다음 →</button>
             </div>
           </div>
 
-          <!-- ── STEP 3: 인증서 발급 ── -->
+          <!-- STEP 3: 얼굴 등록 -->
           <div id="reg-step3" class="reg-step hidden">
-            <div class="step-title">
-              <span class="step-num">03</span>
-              <span class="step-name">인증서 발급 확인</span>
+            <div class="step-title"><span class="step-num">03</span><span class="step-name">얼굴 등록 <span style="color:var(--text-muted);font-size:12px">(선택)</span></span></div>
+            <p class="face-desc" style="margin-bottom:14px">얼굴을 등록하면 이후 <strong style="color:var(--accent)">카메라 한 번</strong>으로 로그인할 수 있습니다.<br>건너뛰기를 눌러 나중에 등록할 수도 있습니다.</p>
+
+            <div class="webcam-wrap" id="reg-webcam-wrap">
+              <video id="reg-video" class="webcam-video" autoplay muted playsinline></video>
+              <canvas id="reg-canvas" class="webcam-canvas"></canvas>
+              <div class="face-guide-ring" id="reg-guide-ring">
+                <div class="face-guide-inner"></div>
+              </div>
+              <div class="face-status-overlay" id="reg-face-status">
+                <span class="face-status-dot"></span>
+                <span id="reg-face-status-text">카메라 시작 버튼을 누르세요</span>
+              </div>
             </div>
+
+            <div style="display:flex;gap:10px;margin-top:14px">
+              <button class="btn btn-secondary" id="btn-start-reg-cam" style="flex:1">📷 카메라 시작</button>
+              <button class="btn btn-primary hidden" id="btn-capture-face" style="flex:1">🎯 얼굴 등록</button>
+            </div>
+
+            <div id="face-reg-preview" class="face-reg-preview hidden">
+              <div class="face-reg-preview-label">✅ 등록된 얼굴</div>
+              <canvas id="face-snapshot" width="120" height="120"></canvas>
+              <button class="btn btn-secondary btn-sm" id="btn-retake" style="margin-top:8px;width:100%">다시 촬영</button>
+            </div>
+
+            <div id="reg-alert-3" class="alert alert-error hidden"></div>
+            <div id="reg-alert-3-ok" class="alert alert-success hidden"></div>
+
+            <div class="step-nav" style="margin-top:14px">
+              <button class="btn btn-secondary step-btn" id="btn-step3-prev">← 이전</button>
+              <div style="display:flex;gap:8px;flex:1">
+                <button class="btn btn-secondary step-btn" id="btn-step3-skip">건너뛰기</button>
+                <button class="btn btn-primary step-btn" id="btn-step3-next" disabled>다음 →</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- STEP 4: 인증서 발급 -->
+          <div id="reg-step4" class="reg-step hidden">
+            <div class="step-title"><span class="step-num">04</span><span class="step-name">인증서 발급</span></div>
             <div class="cert-issuing" id="cert-issuing">
               <div class="issuing-spinner"></div>
               <p class="issuing-text">인증서를 생성하고 있습니다...</p>
@@ -220,25 +285,25 @@
               </div>
               <div class="cert-notice">
                 <span class="cert-notice-icon">⚠️</span>
-                <p>인증서(PEM 파일)를 반드시 안전한 곳에 보관하세요.<br>분실 시 관리자에게 재발급을 요청해야 합니다.</p>
+                <p>PEM 파일을 반드시 안전한 곳에 보관하세요.<br>분실 시 관리자에게 재발급 요청이 필요합니다.</p>
               </div>
             </div>
-            <div id="reg-alert-3" class="alert alert-error hidden"></div>
-            <div class="step-nav hidden" id="step3-nav">
+            <div id="reg-alert-4" class="alert alert-error hidden"></div>
+            <div class="step-nav hidden" id="step4-nav">
               <button class="btn btn-secondary step-btn" id="btn-download-cert">⬇ PEM 다운로드</button>
-              <button class="btn btn-primary step-btn" id="btn-step3-next">회원가입 완료 →</button>
+              <button class="btn btn-primary step-btn" id="btn-step4-next">회원가입 완료 →</button>
             </div>
           </div>
 
-          <!-- ── STEP 4: 완료 ── -->
-          <div id="reg-step4" class="reg-step hidden">
+          <!-- STEP 5: 완료 -->
+          <div id="reg-step5" class="reg-step hidden">
             <div class="complete-wrap">
               <div class="complete-icon">🎉</div>
               <h2 class="complete-title">회원가입 완료!</h2>
               <p class="complete-desc">
                 <strong id="done-name"></strong>님, 환영합니다.<br>
-                아이디 <strong id="done-username"></strong>으로 로그인하거나<br>
-                발급된 인증서로 로그인할 수 있습니다.
+                <strong id="done-username"></strong>으로 로그인하거나<br>
+                발급된 인증서 또는 <span id="done-face-note" style="color:var(--accent)"></span>로 로그인할 수 있습니다.
               </p>
               <div class="complete-actions">
                 <button class="btn btn-secondary step-btn" id="btn-done-download">⬇ 인증서 재다운로드</button>
@@ -250,51 +315,11 @@
           <div class="auth-link" id="reg-login-link">이미 계정이 있으신가요? <a onclick="switchTab('login')">로그인</a></div>
         </div>
 
-        <!-- ══════════════════════════════
-             인증서 로그인 패널
-             ══════════════════════════════ -->
-        <div id="panel-cert-login" class="auth-panel">
-          <p style="color:var(--text-muted);font-size:13px;margin-bottom:16px;line-height:1.8">
-            회원가입 시 발급된 <strong style="color:var(--accent)">PEM 인증서 파일</strong>로<br>
-            비밀번호 없이 로그인합니다.
-          </p>
-          <div class="cert-drop" id="cert-drop">
-            <div class="cert-drop-icon">
-              <svg width="38" height="38" viewBox="0 0 40 40" fill="none">
-                <rect x="7" y="3" width="22" height="30" rx="3" stroke="currentColor" stroke-width="1.5" fill="none"/>
-                <line x1="13" y1="12" x2="23" y2="12" stroke="currentColor" stroke-width="1.5"/>
-                <line x1="13" y1="18" x2="23" y2="18" stroke="currentColor" stroke-width="1.5"/>
-                <line x1="13" y1="24" x2="19" y2="24" stroke="currentColor" stroke-width="1.5"/>
-                <circle cx="31" cy="31" r="8" fill="var(--bg-card)" stroke="currentColor" stroke-width="1.5"/>
-                <line x1="31" y1="27.5" x2="31" y2="34.5" stroke="currentColor" stroke-width="1.5"/>
-                <line x1="27.5" y1="31" x2="34.5" y2="31" stroke="currentColor" stroke-width="1.5"/>
-              </svg>
-            </div>
-            <div class="cert-drop-text">PEM 파일 드래그 또는 클릭</div>
-            <div class="cert-drop-sub">.pem · .crt · .cer 지원</div>
-            <input type="file" id="cert-file" accept=".pem,.crt,.cer" class="hidden" />
-          </div>
-          <div id="cert-loaded-bar" class="cert-loaded hidden">
-            <div class="cert-loaded-dot"></div>
-            <div class="cert-loaded-name" id="cert-loaded-name">파일 로드됨</div>
-            <button class="btn-icon" id="btn-cert-clear">✕</button>
-          </div>
-          <div class="form-group">
-            <label class="form-label">또는 PEM 텍스트 직접 입력</label>
-            <textarea id="cert-text" class="form-input" style="font-family:'JetBrains Mono',monospace;font-size:11px" rows="5" placeholder="-----BEGIN CERTIFICATE-----&#10;...&#10;-----END CERTIFICATE-----"></textarea>
-          </div>
-          <button class="btn btn-primary" id="btn-cert-login">인증서로 로그인</button>
-          <div id="cert-login-alert" class="alert alert-error hidden"></div>
-          <div class="auth-link">계정이 없으신가요? <a onclick="switchTab('register')">회원가입</a></div>
-        </div>
+      </div>
+    </div>
+  </div>
 
-      </div><!-- /auth-box -->
-    </div><!-- /auth-page -->
-  </div><!-- /auth-page wrapper -->
-
-  <!-- ════════════════════════════════════
-       대시보드
-       ════════════════════════════════════ -->
+  <!-- ══════════════════ 대시보드 ══════════════════ -->
   <div id="dashboard-page" class="hidden">
     <aside class="sidebar">
       <div class="sidebar-logo">
@@ -317,6 +342,10 @@
         <a class="nav-item" data-view="my-certs" href="#">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
           내 인증서
+        </a>
+        <a class="nav-item" data-view="face-manage" href="#">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/><path d="M9 11.5c.5.3 1 .5 1.5.5s1-.2 1.5-.5"/></svg>
+          얼굴 관리
         </a>
         <div id="admin-nav" class="hidden">
           <div class="nav-label" style="margin-top:16px">ADMIN</div>
@@ -343,12 +372,12 @@
         </button>
       </div>
     </aside>
-    <main class="main-content">
-      <div id="view-container"></div>
-    </main>
+    <main class="main-content"><div id="view-container"></div></main>
   </div>
 
-</div><!-- /app -->
+</div>
+<script src="/face-api.min.js"></script>
+<script src="/js/face.js"></script>
 <script src="/js/app.js"></script>
 </body>
 </html>
